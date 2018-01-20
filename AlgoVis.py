@@ -1,36 +1,52 @@
-import pygame
+import sys
 
-from algorithms import algorithm
+from algorithms import sorting, graphs
 
-#Объявляем переменные
-WIN_WIDTH = 800 #Ширина создаваемого окна
-WIN_HEIGHT = 640 # Высота
-DISPLAY = (WIN_WIDTH, WIN_HEIGHT) # Группируем ширину и высоту в одну переменную
-BACKGROUND_COLOR = "#ffffff"
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+#    CONSTANTS
+MAIN_WIN_WIDTH = 800    #    Main window width
+MAIN_WIN_HEIGHT = 640    #    Main window height
+MAIN_WIN_TITLE = "AlgoVis"    # Main window title
+SORT_GROUP_TITLE = "Сортировка"
+GRAPH_GROUP_TITLE = "Графы"
+
+
+class MainWindow(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT)
+        self.setWindowTitle(MAIN_WIN_TITLE)
+        main_layout = QtWidgets.QHBoxLayout()
+
+        #    initialization mainLayout
+        sort_group_layout = QtWidgets.QVBoxLayout()
+        graph_group_layout = QtWidgets.QVBoxLayout()
+
+        bubble_sort_btn = sorting.BubbleSortBtn()
+        quick_sort_btn = sorting.QuickSortBtn()
+        dijkstra_btn = graphs.DijkstraBtn()
+
+        sort_group_layout.addWidget(bubble_sort_btn)
+        sort_group_layout.addWidget(quick_sort_btn)
+        graph_group_layout.addWidget(dijkstra_btn)
+
+        sort_group = QtWidgets.QGroupBox(SORT_GROUP_TITLE)
+        sort_group.setLayout(sort_group_layout)
+        graph_group = QtWidgets.QGroupBox(GRAPH_GROUP_TITLE)
+        graph_group.setLayout(graph_group_layout)
+
+        main_layout.addWidget(sort_group)
+        main_layout.addWidget(graph_group)
+
+        self.setLayout(main_layout)
 
 def main():
-    pygame.init()   # Инициация PyGame, обязательная строчка 
-    screen = pygame.display.set_mode(DISPLAY)   # Создаем окошко
-    pygame.display.set_caption("AlgoVis")   # Пишем в шапку
-    bg = pygame.Surface(DISPLAY)    # Создание видимой поверхности
-    bg.fill(pygame.Color(BACKGROUND_COLOR)) # Заливаем поверхность сплошным цветом
-    maxA = 20
-    minA = 1
-    sort_elements = algorithm.Array(screen, bg, size=10, max_value=maxA, min_value=minA)
-    sort_elements.bubble_sort()
-    #sort_elements.swap(2,8)
-    #sort_elements.swap(8,2)
-    #sort_elements.update()
-    #sort_elements.draw(bg)
-    while(True):
-        for e in pygame.event.get(): # Обрабатываем события
-            if e.type == pygame.QUIT:
-                raise SystemExit
-        timer = pygame.time.Clock()
-        timer.tick(60)
-        screen.blit(bg, (0,0))  # Каждую итерацию необходимо всё перерисовывать
-        pygame.display.update() # обновление и вывод всех изменений на экран
+    app = QtWidgets.QApplication(sys.argv)
+    mainWindow = MainWindow()
 
+    mainWindow.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
