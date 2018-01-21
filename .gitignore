@@ -103,7 +103,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# vscode
+# visual code / studio
 .vscode
+*.pyproj
+*.sln
+.vs
 
 .gitignore.save
+

@@ -1,12 +1,11 @@
- 
-
+from algorithms.algo import AlgoWidget
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 #	CONSTANTS
 DIJKSTRA_STRING = "Алгоритм Дейкстры"
 
 
-class GraphWidget(QtWidgets.QWidget):
+class GraphWidget(AlgoWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -20,9 +19,9 @@ class Dijkstra(GraphWidget):
 class DijkstraBtn(QtWidgets.QPushButton):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.clicked.connect(self.clickedMethod)
+        self.clicked.connect(self.clicked_method)
         self.setText(DIJKSTRA_STRING)
 
-    def clickedMethod(self):
+    def clicked_method(self):
         self.dijkstraWidget = Dijkstra()
         self.dijkstraWidget.show()

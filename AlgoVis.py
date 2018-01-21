@@ -2,12 +2,12 @@ import sys
 
 from algorithms import sorting, graphs
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 
 #    CONSTANTS
 MAIN_WIN_WIDTH = 800    #    Main window width
 MAIN_WIN_HEIGHT = 640    #    Main window height
-MAIN_WIN_TITLE = "AlgoVis"    # Main window title
+MAIN_WIN_TITLE = "AlgoVis - визуализация алгоритмов"    # Main window title
 SORT_GROUP_TITLE = "Сортировка"
 GRAPH_GROUP_TITLE = "Графы"
 
@@ -15,6 +15,7 @@ GRAPH_GROUP_TITLE = "Графы"
 class MainWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT)
         self.setWindowTitle(MAIN_WIN_TITLE)
         main_layout = QtWidgets.QHBoxLayout()
@@ -43,9 +44,8 @@ class MainWindow(QtWidgets.QWidget):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    mainWindow = MainWindow()
-
-    mainWindow.show()
+    main_window = MainWindow()
+    main_window.show()
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
