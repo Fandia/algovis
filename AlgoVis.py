@@ -24,8 +24,8 @@ class MainWindow(QtWidgets.QWidget):
         sort_group_layout = QtWidgets.QVBoxLayout()
         graph_group_layout = QtWidgets.QVBoxLayout()
 
-        bubble_sort_btn = sorting.BubbleSortBtn()
-        quick_sort_btn = sorting.QuickSortBtn()
+        bubble_sort_btn = sorting.BubbleSortBtn(self)
+        quick_sort_btn = sorting.QuickSortBtn(self)
         dijkstra_btn = graphs.DijkstraBtn()
 
         sort_group_layout.addWidget(bubble_sort_btn)
