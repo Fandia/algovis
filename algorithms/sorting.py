@@ -3,6 +3,8 @@ import random
 import threading
 import time
 import copy
+import math
+import json
 from abc import ABCMeta, abstractmethod
 
 from algorithms.algo import AlgoWidget
@@ -15,14 +17,21 @@ SORT_WIN_HEIGHT = 800
 PAUSE_TIME = 500
 
 MIN_RAND = 1
-MAX_RAND = 10
+MAX_RAND = 20
 ELEMENTS_COUNT = 20
+MIN_ELEMENTS_COUNT = 2
+MAX_ELEMENTS_COUNT = 50
+MIN_RAND_RANGE = -50
+MAX_RAND_RANGE = 50
 
-ELEMENT_COLOR = QtGui.QColor(0,128,255)
-SELECT_COLOR = QtGui.QColor(255,190,0)
+ELEMENT_COLOR = (0, 128, 255)
+SELECT_COLOR = (255, 190, 0)
 
 BUBBLE_SORT_STRING = "Сортировка пузырьком"
 QUICK_SORT_STRING = "Быстрая сортировка"
+ELEMENTS_COUNT_STRING = "Количество элементов"
+MIN_RAND_RANGE_STRING = "Минимум"
+MAX_RAND_RANGE_STRING = "Максимум"
 BUBBLE_SORT_DESCR = r"""
 Алгоритм состоит из повторяющихся проходов по сортируемому массиву.
 За каждый проход элементы последовательно сравниваются попарно и, если порядок в паре неверный, выполняется обмен элементов.
@@ -46,37 +55,6 @@ class SortElement(QtWidgets.QGraphicsRectItem):
     def __init__(self, value, parent=None):
         super().__init__(parent)
         self.value = value
-
-    def set_value(self, value):
-        self.value = value
-
-    def __eq__(self, other):
-        return self.value == other.value
-
-    def __ne__(self, other):
-        return self.value != other.value
-
-    def __lt__(self, other):
-        return self.value < other.value
-
-    def __gt__(self, other):
-        return self.value > other.value
-
-    def __le__(self, other):
-        return self.value <= other.value
-
-    def __ge__(self, other):
-        return self.value >= other.value
-
-    def __hash__(self):
-        rect = self.rect()
-        return self.rect.x()
-
-class StateElement():
-    def __init__(self, value, color):
-        self.value = value
-        self.color = color
-
 
 class SortWidget(AlgoWidget):
     def __init__(self, min_rand, max_rand, elements_count, parent=None):
@@ -115,18 +93,18 @@ class SortWidget(AlgoWidget):
         self.select_color = SELECT_COLOR
         self.standard_color = ELEMENT_COLOR
 
+        for i in range(elements_count):
+            element = SortElement(random.randint(min_rand, max_rand))
+            element.setBrush(QtGui.QColor(*self.standard_color))
+            self.sort_list.append(element)
+            self.sort_graphic_scene.addItem(self.sort_list[-1])
+
         if(min_rand >= 0 and max_rand >= 0):
             self.ground_level = self.sort_graphic_view.height()
         elif(min_rand < 0 and max_rand > 0):
             self.ground_level = (1 - abs(min_rand) / self.values_range) * self.sort_graphic_view.height()
         else:
             self.ground_level = 0
-
-        for i in range(elements_count):
-            element = SortElement(random.randint(min_rand, max_rand))
-            element.setBrush(self.standard_color)
-            self.sort_list.append(element)
-            self.sort_graphic_scene.addItem(self.sort_list[-1])
 
         self.set_states()
         self.states_slider.setMaximum(self.max_state)
@@ -136,8 +114,8 @@ class SortWidget(AlgoWidget):
         self.main_layout.addWidget(self.states_slider)
         self.main_layout.addLayout(self.play_layout)
         self.main_layout.addLayout(self.descr_layout)
-        self.resizeEvent = self.update_diagramm
         self.setLayout(self.main_layout)
+        self.paintEvent = self.update_diagramm
         self.resize(SORT_WIN_WIDTH, SORT_WIN_HEIGHT)
 
     def set_description(self, descr_str, alg_str):
@@ -147,14 +125,14 @@ class SortWidget(AlgoWidget):
         self.descr_layout.addWidget(alg_label)
 
     def update_diagramm(self, event):
-        width = self.sort_graphic_view.width() * 0.04
+        width = math.floor(self.sort_graphic_view.width() / len(self.sort_list))
         for i, element in enumerate(self.sort_list, 0):
-            height = abs(element.value) / self.values_range * self.sort_graphic_view.height()
+            height = math.floor(abs(element.value) / self.values_range * self.sort_graphic_view.height())
             if(element.value > 0):
                 y = self.ground_level - height
             else:
                 y = self.ground_level
-            element.setRect(i * width, y, width, height)
+            element.setRect(i * width, math.floor(y), width, height)
         new_rect = self.sort_graphic_scene.itemsBoundingRect()
         border = 0.1 * min(new_rect.width(), new_rect.height())
         new_rect.setRect(new_rect.x() - border, new_rect.y() - border,
@@ -167,8 +145,8 @@ class SortWidget(AlgoWidget):
 
     def set_by_states(self):
         for i, state_element in enumerate(self.states_list[self.current_state], 0):
-            self.sort_list[i].value = state_element.value
-            self.sort_list[i].setBrush(state_element.color)
+            self.sort_list[i].value = state_element["value"]
+            self.sort_list[i].setBrush(QtGui.QColor(*state_element["color"]))
         self.update_diagramm(None)
 
     def timerEvent(self, event=None):
@@ -225,23 +203,23 @@ class BubbleSort(SortWidget):
         self.set_description(BUBBLE_SORT_DESCR, BUBBLE_SORT_ALG)
 
     def set_states(self):
-        self.states_list = [[StateElement(e.value, self.standard_color) for e in self.sort_list]]
+        self.states_list = [[{"value":e.value, "color":self.standard_color} for e in self.sort_list]]
         for j in range(1, len(self.sort_list)):
             for i in range(len(self.sort_list) - j):
                 #   change color in selected elements
-                self.states_list.append(copy.deepcopy(self.states_list[-1]))
-                self.states_list[-1][i].color = self.select_color
-                self.states_list[-1][i+1].color = self.select_color
+                #self.states_list.append(copy.deepcopy(self.states_list[-1]))
+                self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
+                self.states_list[-1][i]["color"] = self.select_color
+                self.states_list[-1][i+1]["color"] = self.select_color
                 #   swap selected elements
-                self.states_list.append(copy.deepcopy(self.states_list[-1]))
-                if(self.states_list[-1][i].value > self.states_list[-1][i+1].value):
+                self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
+                if(self.states_list[-1][i]["value"] > self.states_list[-1][i+1]["value"]):
                     self.states_list[-1][i], self.states_list[-1][i+1] = \
                         self.states_list[-1][i+1], self.states_list[-1][i]
-                    #self.swap_elements(i, i + 1)
                 #   replace color by default brush
-                self.states_list.append(copy.deepcopy(self.states_list[-1]))
-                self.states_list[-1][i].color = self.standard_color
-                self.states_list[-1][i+1].color = self.standard_color
+                self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
+                self.states_list[-1][i]["color"] = self.standard_color
+                self.states_list[-1][i+1]["color"] = self.standard_color
         self.max_state = len(self.states_list) - 1
 
 
@@ -250,49 +228,3 @@ class QuickSort(SortWidget):
         super().__init__(min_rand, max_rand, elements_count, parent)
         self.setWindowTitle(QUICK_SORT_STRING)
         self.set_description(BUBBLE_SORT_DESCR, BUBBLE_SORT_ALG)
-
-class SortButton(QtWidgets.QPushButton):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.clicked.connect(self.clicked_method)
-        self.min_rand = MIN_RAND
-        self.max_rand = MAX_RAND
-        self.elements_count = ELEMENTS_COUNT
-
-    def clicked_method(self):
-        pass
-
-    def set_widget_params(self, min_rand, max_rand, elements_count):
-        self.min_rand = min_rand
-        self.max_rand = max_rand
-        self.elements_count = elements_count
-
-
-class BubbleSortBtn(SortButton):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setText(BUBBLE_SORT_STRING)
-
-    def clicked_method(self):
-        self.bubble_sort_widget = BubbleSort(
-            self.min_rand,
-            self.max_rand,
-            self.elements_count,
-            self
-            )
-        self.bubble_sort_widget.show()
-
-
-class QuickSortBtn(SortButton):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setText(QUICK_SORT_STRING)
-
-    def clicked_method(self):
-        self.quick_sort_widget = QuickSort(
-            self.min_rand,
-            self.max_rand,
-            self.elements_count,
-            self
-            )
-        self.quick_sort_widget.show()
