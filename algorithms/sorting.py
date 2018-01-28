@@ -32,13 +32,13 @@ QUICK_SORT_STRING = "Быстрая сортировка"
 ELEMENTS_COUNT_STRING = "Количество элементов"
 MIN_RAND_RANGE_STRING = "Минимум"
 MAX_RAND_RANGE_STRING = "Максимум"
-BUBBLE_SORT_DESCR = r"""
-Алгоритм состоит из повторяющихся проходов по сортируемому массиву.
-За каждый проход элементы последовательно сравниваются попарно и, если порядок в паре неверный, выполняется обмен элементов.
-Проходы по массиву повторяются N-1 раз или до тех пор, пока на очередном проходе не окажется,
-что обмены больше не нужны, что означает — массив отсортирован. При каждом проходе алгоритма по внутреннему циклу,
-очередной наибольший элемент массива ставится на своё место в конце массива рядом с предыдущим «наибольшим элементом»,
-а наименьший элемент перемещается на одну позицию к началу массива («всплывает» до нужной позиции, как пузырёк в воде.
+BUBBLE_SORT_DESCR = """
+Алгоритм состоит из повторяющихся проходов по сортируемому массиву. \
+За каждый проход элементы последовательно сравниваются попарно и, если порядок в паре неверный, выполняется обмен элементов. \
+Проходы по массиву повторяются N-1 раз или до тех пор, пока на очередном проходе не окажется, \
+что обмены больше не нужны, что означает — массив отсортирован. При каждом проходе алгоритма по внутреннему циклу, \
+очередной наибольший элемент массива ставится на своё место в конце массива рядом с предыдущим «наибольшим элементом», \
+а наименьший элемент перемещается на одну позицию к началу массива («всплывает» до нужной позиции, как пузырёк в воде. \
 Отсюда и название алгоритма).
 """
 BUBBLE_SORT_ALG = r"""
@@ -65,15 +65,31 @@ class SortWidget(AlgoWidget):
         self.sort_graphic_scene = QtWidgets.QGraphicsScene()
         self.sort_graphic_view = QtWidgets.QGraphicsView(self.sort_graphic_scene)
         #   Play buttons
-        self.play_button = QtWidgets.QPushButton("Play - Pause", self)
+        left_dummy = QtWidgets.QWidget(self)
+        right_dummy = QtWidgets.QWidget(self)
+        self.play_button = QtWidgets.QPushButton(self)
         self.play_button.clicked.connect(self.change_play_states_wait_event)
-        self.next_button = QtWidgets.QPushButton("Next", self)
+        play_image = QtGui.QPixmap("res/play.png")
+        play_icon = QtGui.QIcon(play_image)
+        self.play_button.setIcon(play_icon)
+        self.play_button.setIconSize(QtCore.QSize(20,20))
+        self.next_button = QtWidgets.QPushButton(self)
         self.next_button.clicked.connect(self.next_state)
-        self.prev_button = QtWidgets.QPushButton("Previous", self)
+        next_image = QtGui.QPixmap("res/next.png")
+        next_icon = QtGui.QIcon(next_image)
+        self.next_button.setIcon(next_icon)
+        self.next_button.setIconSize(QtCore.QSize(20,20))
+        self.prev_button = QtWidgets.QPushButton(self)
         self.prev_button.clicked.connect(self.prev_state)
+        prev_image = QtGui.QPixmap("res/prev.png")
+        prev_icon = QtGui.QIcon(prev_image)
+        self.prev_button.setIcon(prev_icon)
+        self.prev_button.setIconSize(QtCore.QSize(20,20))
+        self.play_layout.addWidget(left_dummy, 1)
         self.play_layout.addWidget(self.prev_button)
         self.play_layout.addWidget(self.play_button)
         self.play_layout.addWidget(self.next_button)
+        self.play_layout.addWidget(right_dummy, 1)
         #   States slider
         self.states_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self)
         self.states_slider.valueChanged.connect(self.slider_changed)
@@ -119,10 +135,17 @@ class SortWidget(AlgoWidget):
         self.resize(SORT_WIN_WIDTH, SORT_WIN_HEIGHT)
 
     def set_description(self, descr_str, alg_str):
-        descr_label = QtWidgets.QLabel(descr_str)
-        alg_label = QtWidgets.QLabel(alg_str)
-        self.descr_layout.addWidget(descr_label)
-        self.descr_layout.addWidget(alg_label)
+        self.descr_label = QtWidgets.QLabel(descr_str)
+        self.descr_label.setWordWrap(True)
+        self.descr_label.setStyleSheet("font-size: 16px;")
+        self.alg_label = QtWidgets.QLabel(alg_str)
+        self.alg_label.setStyleSheet("font-size: 16px;")
+        vertical_line = QtWidgets.QFrame(self)
+        vertical_line.setFrameShape(QtWidgets.QFrame.VLine)
+        vertical_line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.descr_layout.addWidget(self.descr_label, 1)
+        self.descr_layout.addWidget(vertical_line)
+        self.descr_layout.addWidget(self.alg_label)
 
     def update_diagramm(self, event):
         width = math.floor(self.sort_graphic_view.width() / len(self.sort_list))
@@ -174,7 +197,10 @@ class SortWidget(AlgoWidget):
         self.set_by_states()
 
     def slider_released(self):
-        self.current_state = self.states_slider.value()
+        if (self.states_slider.value() >= 0):
+            self.current_state = self.states_slider.value()
+        else:
+            self.current_state = 0
         self.set_by_states()
         if(self.play_states_event.isSet()):
             self.current_change_state_timer = self.startTimer(PAUSE_TIME)
@@ -205,6 +231,7 @@ class BubbleSort(SortWidget):
     def set_states(self):
         self.states_list = [[{"value":e.value, "color":self.standard_color} for e in self.sort_list]]
         for j in range(1, len(self.sort_list)):
+            done = True
             for i in range(len(self.sort_list) - j):
                 #   change color in selected elements
                 #self.states_list.append(copy.deepcopy(self.states_list[-1]))
@@ -216,10 +243,13 @@ class BubbleSort(SortWidget):
                 if(self.states_list[-1][i]["value"] > self.states_list[-1][i+1]["value"]):
                     self.states_list[-1][i], self.states_list[-1][i+1] = \
                         self.states_list[-1][i+1], self.states_list[-1][i]
+                    done = False
                 #   replace color by default brush
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                 self.states_list[-1][i]["color"] = self.standard_color
                 self.states_list[-1][i+1]["color"] = self.standard_color
+            if (done):
+                break
         self.max_state = len(self.states_list) - 1
 
 
