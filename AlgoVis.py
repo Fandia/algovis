@@ -17,12 +17,12 @@ class MainWindow(QtWidgets.QWidget):
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT)
-        self.setWindowTitle(MAIN_WIN_TITLE)
+        self.setWindowTitle(self.tr("Algovis - algorithms visualization"))
         main_layout = QtWidgets.QHBoxLayout(self)
 
         #   Initialization main_layout
         #   Sorting
-        sort_group = QtWidgets.QGroupBox(SORT_GROUP_TITLE, self)
+        sort_group = QtWidgets.QGroupBox(self.tr("Sorting"), self)
         sort_group_layout = QtWidgets.QVBoxLayout()
         sort_params_layout = QtWidgets.QFormLayout()
         self.min_rand_sbox = QtWidgets.QSpinBox(self)
@@ -34,23 +34,23 @@ class MainWindow(QtWidgets.QWidget):
         self.elements_count_sbox = QtWidgets.QSpinBox(self)
         self.elements_count_sbox.setRange(sorting.MIN_ELEMENTS_COUNT, sorting.MAX_ELEMENTS_COUNT)
         self.elements_count_sbox.setValue(sorting.ELEMENTS_COUNT)
-        sort_params_layout.addRow(sorting.MIN_RAND_RANGE_STRING, self.min_rand_sbox)
-        sort_params_layout.addRow(sorting.MAX_RAND_RANGE_STRING, self.max_rand_sbox)
-        sort_params_layout.addRow(sorting.ELEMENTS_COUNT_STRING, self.elements_count_sbox)
+        sort_params_layout.addRow(self.tr("Minimum"), self.min_rand_sbox)
+        sort_params_layout.addRow(self.tr("Maximum"), self.max_rand_sbox)
+        sort_params_layout.addRow(self.tr("Elements count"), self.elements_count_sbox)
 
-        self.bubble_sort_btn = QtWidgets.QPushButton(sorting.BUBBLE_SORT_STRING, self)
+        self.bubble_sort_btn = QtWidgets.QPushButton(self.tr("Bubble sort"), self)
         self.bubble_sort_btn.clicked.connect(self.bubble_sort_clicked)
-        self.quick_sort_btn = QtWidgets.QPushButton(sorting.QUICK_SORT_STRING, self)
+        self.quick_sort_btn = QtWidgets.QPushButton(self.tr("Quick sort"), self)
         self.quick_sort_btn.clicked.connect(self.quick_sort_clicked)
         sort_group_layout.addWidget(self.bubble_sort_btn)
         sort_group_layout.addWidget(self.quick_sort_btn)
         sort_group_layout.addLayout(sort_params_layout)
         sort_group.setLayout(sort_group_layout)
         #   Graph
-        graph_group = QtWidgets.QGroupBox(GRAPH_GROUP_TITLE, self)
+        graph_group = QtWidgets.QGroupBox(self.tr("Graphs"), self)
         graph_group_layout = QtWidgets.QVBoxLayout()
-        self.dijkstra_btn = QtWidgets.QPushButton(graphs.DIJKSTRA_STRING, self)
-        graph_group_layout.addWidget(self.dijkstra_btn)
+        self.bfs_btn = QtWidgets.QPushButton(self.tr("Breadth-first search"), self)
+        graph_group_layout.addWidget(self.bfs_btn)
         graph_group.setLayout(graph_group_layout)
 
         main_layout.addWidget(sort_group)
@@ -79,6 +79,11 @@ class MainWindow(QtWidgets.QWidget):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
+
+    translator = QtCore.QTranslator()
+    translator.load("algovis_ru")
+    if not app.installTranslator(translator):
+        print("Can not install translation!")
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())

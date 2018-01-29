@@ -50,6 +50,24 @@ FOR J=1 TO N-1 STEP 1
     IF F=0 THEN EXIT FOR
 NEXT J
 """
+QUICK_SORT_ALG = r"""
+algorithm quicksort(A, lo, hi) is
+    if lo < hi then
+        p := partition(A, lo, hi)
+        quicksort(A, lo, p - 1 )
+        quicksort(A, p + 1, hi)
+
+algorithm partition(A, lo, hi) is
+    pivot := A[hi]
+    i := lo - 1    
+    for j := lo to hi - 1 do
+        if A[j] < pivot then
+            i := i + 1
+            swap A[i] with A[j]
+    if A[hi] < A[i + 1] then
+        swap A[i + 1] with A[hi]
+    return i + 1
+"""
 
 class SortElement(QtWidgets.QGraphicsRectItem):
     def __init__(self, value, parent=None):
@@ -81,7 +99,7 @@ class SortWidget(AlgoWidget):
         self.next_button.setIconSize(QtCore.QSize(20,20))
         self.prev_button = QtWidgets.QPushButton(self)
         self.prev_button.clicked.connect(self.prev_state)
-        prev_image = QtGui.QPixmap("res/prev.png")
+        prev_image = next_image.transformed(QtGui.QTransform().scale(-1, 1))
         prev_icon = QtGui.QIcon(prev_image)
         self.prev_button.setIcon(prev_icon)
         self.prev_button.setIconSize(QtCore.QSize(20,20))
@@ -109,16 +127,20 @@ class SortWidget(AlgoWidget):
         self.select_color = SELECT_COLOR
         self.standard_color = ELEMENT_COLOR
 
+        element_pen = QtGui.QPen()
+        element_pen.setWidth(2)
         for i in range(elements_count):
             element = SortElement(random.randint(min_rand, max_rand))
             element.setBrush(QtGui.QColor(*self.standard_color))
+            element.setPen(element_pen)
+            text = QtWidgets.QGraphicsTextItem(str(element.value), element)
             self.sort_list.append(element)
             self.sort_graphic_scene.addItem(self.sort_list[-1])
 
         if(min_rand >= 0 and max_rand >= 0):
             self.ground_level = self.sort_graphic_view.height()
         elif(min_rand < 0 and max_rand > 0):
-            self.ground_level = (1 - abs(min_rand) / self.values_range) * self.sort_graphic_view.height()
+            self.ground_level = math.floor((1 - abs(min_rand) / self.values_range) * self.sort_graphic_view.height())
         else:
             self.ground_level = 0
 
@@ -132,12 +154,14 @@ class SortWidget(AlgoWidget):
         self.main_layout.addLayout(self.descr_layout)
         self.setLayout(self.main_layout)
         self.paintEvent = self.update_diagramm
+        self.resizeEvent = self.update_diagramm
         self.resize(SORT_WIN_WIDTH, SORT_WIN_HEIGHT)
 
     def set_description(self, descr_str, alg_str):
         self.descr_label = QtWidgets.QLabel(descr_str)
         self.descr_label.setWordWrap(True)
         self.descr_label.setStyleSheet("font-size: 16px;")
+        self.descr_label.setOpenExternalLinks(True)
         self.alg_label = QtWidgets.QLabel(alg_str)
         self.alg_label.setStyleSheet("font-size: 16px;")
         vertical_line = QtWidgets.QFrame(self)
@@ -148,7 +172,7 @@ class SortWidget(AlgoWidget):
         self.descr_layout.addWidget(self.alg_label)
 
     def update_diagramm(self, event):
-        width = math.floor(self.sort_graphic_view.width() / len(self.sort_list))
+        width = self.sort_graphic_view.width() / len(self.sort_list)
         for i, element in enumerate(self.sort_list, 0):
             height = math.floor(abs(element.value) / self.values_range * self.sort_graphic_view.height())
             if(element.value > 0):
@@ -156,6 +180,13 @@ class SortWidget(AlgoWidget):
             else:
                 y = self.ground_level
             element.setRect(i * width, math.floor(y), width, height)
+            element.childItems()[0].setPlainText(str(element.value))
+            current_font = element.childItems()[0].font()
+            current_font.setPixelSize(width / 2.5)
+            text_width = element.childItems()[0].boundingRect().width()
+            text_height = element.childItems()[0].boundingRect().height()
+            element.childItems()[0].setFont(current_font)
+            element.childItems()[0].setPos(i * width + (width - text_width) / 2, math.floor(y) - text_height)
         new_rect = self.sort_graphic_scene.itemsBoundingRect()
         border = 0.1 * min(new_rect.width(), new_rect.height())
         new_rect.setRect(new_rect.x() - border, new_rect.y() - border,
@@ -225,8 +256,17 @@ class SortWidget(AlgoWidget):
 class BubbleSort(SortWidget):
     def __init__(self, min_rand, max_rand, elements_count, parent=None):
         super().__init__(min_rand, max_rand, elements_count, parent)
-        self.setWindowTitle(BUBBLE_SORT_STRING)
-        self.set_description(BUBBLE_SORT_DESCR, BUBBLE_SORT_ALG)
+        self.setWindowTitle(self.tr("Bubble sort"))
+        self.set_description(self.tr(
+        """
+        <b>Bubble sort</b>, sometimes referred to as <b>sinking sort</b>, is a simple sorting algorithm that repeatedly \
+        steps through the list to be sorted, compares each pair of adjacent items and swaps them if they are \
+        in the wrong order. The pass through the list is repeated until no swaps are needed, which indicates \
+        that the list is sorted. The algorithm, which is a comparison sort, is named for the way smaller or \
+        larger elements "bubble" to the top of the list. Although the algorithm is simple, it is too slow and \
+        impractical for most problems even when compared to insertion sort. It can be practical if the input \
+        is usually in sorted order but may occasionally have some out-of-order elements nearly in position.\
+        """), BUBBLE_SORT_ALG)
 
     def set_states(self):
         self.states_list = [[{"value":e.value, "color":self.standard_color} for e in self.sort_list]]
@@ -256,5 +296,17 @@ class BubbleSort(SortWidget):
 class QuickSort(SortWidget):
     def __init__(self, min_rand, max_rand, elements_count, parent=None):
         super().__init__(min_rand, max_rand, elements_count, parent)
-        self.setWindowTitle(QUICK_SORT_STRING)
-        self.set_description(BUBBLE_SORT_DESCR, BUBBLE_SORT_ALG)
+        self.setWindowTitle(self.tr("Quick sort"))
+        self.set_description(self.tr(
+        """
+        <b>Quicksort</b> (sometimes called <b>partition-exchange sort</b>) is an efficient sorting algorithm, \
+        serving as a systematic method for placing the elements of an array in order. \
+        Developed by <a href="https://en.wikipedia.org/wiki/Tony_Hoare">Tony Hoare</a> in 1959 and published in 1961, \
+        it is still a commonly used algorithm for sorting. When implemented well, it can be about two or three \
+        times faster than its main competitors, merge sort and heapsort.
+        Quicksort is a comparison sort, meaning that it can sort items of any type for which a "less-than" relation \
+        (formally, a total order) is defined. In efficient implementations it is not a stable sort, meaning that the \
+        relative order of equal sort items is not preserved. Quicksort can operate in-place on an array, requiring \
+        small additional amounts of memory to perform the sorting. It is very similar to selection sort, except that \
+        it does not always choose worst-case partition.
+        """), QUICK_SORT_ALG)
