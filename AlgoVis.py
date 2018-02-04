@@ -7,19 +7,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets, Qt
 #    CONSTANTS
 MAIN_WIN_WIDTH = 800    #    Main window width
 MAIN_WIN_HEIGHT = 640    #    Main window height
-MAIN_WIN_TITLE = "AlgoVis - визуализация алгоритмов"    # Main window title
-SORT_GROUP_TITLE = "Сортировка"
-GRAPH_GROUP_TITLE = "Графы"
-
 
 class MainWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT)
+        #self.resize(MAIN_WIN_WIDTH, MAIN_WIN_HEIGHT)
         self.setWindowTitle(self.tr("Algovis - algorithms visualization"))
         main_layout = QtWidgets.QHBoxLayout(self)
-
         #   Initialization main_layout
         #   Sorting
         sort_group = QtWidgets.QGroupBox(self.tr("Sorting"), self)
@@ -57,6 +52,12 @@ class MainWindow(QtWidgets.QWidget):
         main_layout.addWidget(graph_group)
 
         self.setLayout(main_layout)
+        self.setGeometry(QtWidgets.QStyle.alignedRect(
+            QtCore.Qt.LeftToRight, 
+            QtCore.Qt.AlignCenter, 
+            self.size(), 
+            QtWidgets.QApplication.desktop().availableGeometry()
+            ))
 
     def bubble_sort_clicked(self):
         self.bubble_sort_widget = sorting.BubbleSort(
@@ -79,11 +80,10 @@ class MainWindow(QtWidgets.QWidget):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-
-    translator = QtCore.QTranslator()
-    translator.load("algovis_ru")
-    if not app.installTranslator(translator):
-        print("Can not install translation!")
+    # translator = QtCore.QTranslator()
+    # translator.load("algovis_ru")
+    # if not app.installTranslator(translator):
+    #     print("Can not install translation!")
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
