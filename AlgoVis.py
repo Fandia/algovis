@@ -45,6 +45,7 @@ class MainWindow(QtWidgets.QWidget):
         graph_group = QtWidgets.QGroupBox(self.tr("Graphs"), self)
         graph_group_layout = QtWidgets.QVBoxLayout()
         self.bfs_btn = QtWidgets.QPushButton(self.tr("Breadth-first search"), self)
+        self.bfs_btn.clicked.connect(self.bfs_clicked)
         graph_group_layout.addWidget(self.bfs_btn)
         graph_group.setLayout(graph_group_layout)
 
@@ -76,6 +77,14 @@ class MainWindow(QtWidgets.QWidget):
             self
             )
         self.quick_sort_widget.show()
+
+    def bfs_clicked(self):
+        self.bfs_widget = graphs.BFS(
+            10,
+            10,
+            self
+            )
+        self.bfs_widget.show()
 
 
 def main():

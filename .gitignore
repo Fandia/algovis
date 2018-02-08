@@ -110,4 +110,5 @@ venv.bak/
 .vs
 
 .gitignore.save
+algovis_env
 
