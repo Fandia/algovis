@@ -73,12 +73,12 @@ class SortWidget(AlgoWidget):
             element.setPen(element_pen)
             text = QtWidgets.QGraphicsTextItem(str(element.value), element)
             self.sort_list.append(element)
-            self.sort_graphic_scene.addItem(self.sort_list[-1])
+            self.graphic_scene.addItem(self.sort_list[-1])
 
         if(min_rand >= 0 and max_rand >= 0):
-            self.ground_level = self.sort_graphic_view.height()
+            self.ground_level = self.graphic_view.height()
         elif(min_rand < 0 and max_rand > 0):
-            self.ground_level = math.floor((1 - abs(min_rand) / self.values_range) * self.sort_graphic_view.height())
+            self.ground_level = math.floor((1 - abs(min_rand) / self.values_range) * self.graphic_view.height())
         else:
             self.ground_level = 0
 
@@ -100,9 +100,9 @@ class SortWidget(AlgoWidget):
         self.pseudocode.setText(pseudo_str)
 
     def update_diagramm(self, event):
-        width = self.sort_graphic_view.width() / len(self.sort_list)
+        width = self.graphic_view.width() / len(self.sort_list)
         for i, element in enumerate(self.sort_list, 0):
-            height = math.floor(abs(element.value) / self.values_range * self.sort_graphic_view.height())
+            height = math.floor(abs(element.value) / self.values_range * self.graphic_view.height())
             if(element.value > 0):
                 y = self.ground_level - height
             else:
@@ -115,12 +115,12 @@ class SortWidget(AlgoWidget):
             text_height = element.childItems()[0].boundingRect().height()
             element.childItems()[0].setFont(current_font)
             element.childItems()[0].setPos(i * width + (width - text_width) / 2, math.floor(y) - text_height)
-        new_rect = self.sort_graphic_scene.itemsBoundingRect()
+        new_rect = self.graphic_scene.itemsBoundingRect()
         border = 0.1 * min(new_rect.width(), new_rect.height())
         new_rect.setRect(new_rect.x() - border, new_rect.y() - border,
             new_rect.width() + border * 2, new_rect.height() + border * 2)
-        self.sort_graphic_scene.setSceneRect(new_rect)
-        self.sort_graphic_view.fitInView(new_rect)
+        self.graphic_scene.setSceneRect(new_rect)
+        self.graphic_view.fitInView(new_rect)
 
     def set_by_states(self):
         for i, state_element in enumerate(self.states_list[self.current_state], 0):

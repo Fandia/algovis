@@ -21,8 +21,8 @@ class AlgoWidget(QtWidgets.QWidget):
         self.main_layout = QtWidgets.QVBoxLayout()
         self.vis_layout = QtWidgets.QHBoxLayout()
         self.play_layout = QtWidgets.QHBoxLayout()
-        self.sort_graphic_scene = QtWidgets.QGraphicsScene()
-        self.sort_graphic_view = QtWidgets.QGraphicsView(self.sort_graphic_scene)
+        self.graphic_scene = QtWidgets.QGraphicsScene()
+        self.graphic_view = QtWidgets.QGraphicsView(self.graphic_scene)
         #   Play buttons
         left_dummy = QtWidgets.QWidget(self)
         right_dummy = QtWidgets.QWidget(self)
@@ -65,7 +65,7 @@ class AlgoWidget(QtWidgets.QWidget):
         #   Description and pseudocode widget
         self.description = QtWidgets.QLabel(self)
         self.pseudocode = QtWidgets.QLabel(self)
-        self.vis_layout.addWidget(self.sort_graphic_view)
+        self.vis_layout.addWidget(self.graphic_view)
         self.vis_layout.addWidget(self.pseudocode)        
         #   States initialization
         self.states_list = []
