@@ -23,6 +23,7 @@ class AlgoWidget(QtWidgets.QWidget):
         self.play_layout = QtWidgets.QHBoxLayout()
         self.graphic_scene = QtWidgets.QGraphicsScene()
         self.graphic_view = QtWidgets.QGraphicsView(self.graphic_scene)
+        self.graphic_view.setRenderHint(QtGui.QPainter.Antialiasing)
         #   Play buttons
         left_dummy = QtWidgets.QWidget(self)
         right_dummy = QtWidgets.QWidget(self)
@@ -68,13 +69,12 @@ class AlgoWidget(QtWidgets.QWidget):
         self.vis_layout.addWidget(self.graphic_view)
         self.vis_layout.addWidget(self.pseudocode)        
         #   States initialization
-        self.states_list = []
         self.current_state = 0
         self.max_state = 0
         self.play_states_event = threading.Event()
         self.play_states_event.clear()
         self.current_change_state_timer = 0
-        self.main_layout.addLayout(self.vis_layout)
+        self.main_layout.addLayout(self.vis_layout, 1)
         self.main_layout.addWidget(self.states_slider)
         self.main_layout.addLayout(self.play_layout)
         self.main_layout.addWidget(h_line_top)
@@ -88,6 +88,17 @@ class AlgoWidget(QtWidgets.QWidget):
             self.size(), 
             screen_geometry
             ))
+
+    def set_description(self, descr_str, pseudo_str):
+        font = self.description.font()
+        font.setPixelSize(FONT_DISPL_PART * self.screen_base)
+        self.description.setFont(font)
+        self.description.setText(descr_str)
+        self.description.setWordWrap(True)
+        self.description.setOpenExternalLinks(True)
+        self.pseudocode.setFont(font)
+        self.pseudocode.setText(pseudo_str)
+        self.pseudocode.setScaledContents(True)
 
     def set_states(self):
         raise NotImplementedError("set_states method not implemented")

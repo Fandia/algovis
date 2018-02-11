@@ -82,22 +82,13 @@ class SortWidget(AlgoWidget):
         else:
             self.ground_level = 0
 
+        self.states_list = []
         self.set_states()
         self.states_slider.setMaximum(self.max_state)
         self.states_slider.setMinimum(0)
 
         self.paintEvent = self.update_diagramm
         self.resizeEvent = self.update_diagramm
-
-    def set_description(self, descr_str, pseudo_str):
-        font = self.description.font()
-        font.setPixelSize(FONT_DISPL_PART * self.screen_base)
-        self.description.setFont(font)
-        self.description.setText(descr_str)
-        self.description.setWordWrap(True)
-        self.description.setOpenExternalLinks(True)
-        self.pseudocode.setFont(font)
-        self.pseudocode.setText(pseudo_str)
 
     def update_diagramm(self, event):
         width = self.graphic_view.width() / len(self.sort_list)
@@ -168,7 +159,6 @@ class BubbleSort(SortWidget):
         self.max_state = len(self.states_list) - 1
 
 
-N = 0
 class QuickSort(SortWidget):
     def __init__(self, min_rand, max_rand, elements_count, parent=None):
         super().__init__(min_rand, max_rand, elements_count, parent)
@@ -198,12 +188,9 @@ class QuickSort(SortWidget):
             return self.states_list[-1][hi]["value"]
 
         def partition(lo, hi):
-            global N
             pivot = get_pivot(lo, hi)
             i = lo
             j = hi
-            print([state["value"] for state in self.states_list[-1]], 
-            "lo={}, hi={}, pivot={}".format(lo, hi, pivot))
             self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
             self.states_list[-1][i]["color"] = SELECT_COLOR
             self.states_list[-1][j]["color"] = SELECT_COLOR
@@ -212,13 +199,11 @@ class QuickSort(SortWidget):
                     self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                     self.states_list[-1][i]["color"] = ELEMENT_COLOR
                     i += 1
-                    N += 1
                     self.states_list[-1][i]["color"] = SELECT_COLOR
                 while self.states_list[-1][j]["value"] > pivot:
                     self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                     self.states_list[-1][j]["color"] = ELEMENT_COLOR
                     j -= 1
-                    N += 1
                     self.states_list[-1][j]["color"] = SELECT_COLOR
                 if i < j:
                     self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
@@ -229,7 +214,6 @@ class QuickSort(SortWidget):
                     self.states_list[-1][j]["color"] = ELEMENT_COLOR
                     i += 1
                     j -= 1
-                    N += 1
                     self.states_list[-1][i]["color"] = SELECT_COLOR
                     self.states_list[-1][j]["color"] = SELECT_COLOR
                 else:
@@ -239,16 +223,11 @@ class QuickSort(SortWidget):
             return i
 
         def quicksort(lo, hi):
-            global N
             if lo < hi:
-                N += 1
                 p = partition(lo, hi)
                 quicksort(lo, p - 1)
                 quicksort(p, hi)
-        global N
-        N = 0
         quicksort(0, len(self.states_list[-1]) - 1)
-        print(N)
 
         for j in range(1, len(self.sort_list)):
             done = True

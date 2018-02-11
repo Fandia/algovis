@@ -46,7 +46,21 @@ class MainWindow(QtWidgets.QWidget):
         graph_group_layout = QtWidgets.QVBoxLayout()
         self.bfs_btn = QtWidgets.QPushButton(self.tr("Breadth-first search"), self)
         self.bfs_btn.clicked.connect(self.bfs_clicked)
+        graph_params_layout = QtWidgets.QFormLayout()
+        self.width_sbox = QtWidgets.QSpinBox(self)
+        self.width_sbox.setRange(graphs.MIN_MATRIX_WIDTH, graphs.MAX_MATRIX_WIDTH)
+        self.width_sbox.setValue(graphs.MATRIX_WIDTH)
+        self.height_sbox = QtWidgets.QSpinBox(self)
+        self.height_sbox.setRange(graphs.MIN_MATRIX_HEIGHT, graphs.MAX_MATRIX_HEIGHT)
+        self.height_sbox.setValue(graphs.MATRIX_HEIGHT)
+        self.nodes_count = QtWidgets.QSpinBox(self)
+        self.nodes_count.setRange(graphs.MIN_NODES_COUNT, graphs.MAX_NODES_COUNT)
+        self.nodes_count.setValue(graphs.NODES_COUNT)
+        graph_params_layout.addRow(self.tr("Width"), self.width_sbox)
+        graph_params_layout.addRow(self.tr("Height"), self.height_sbox)
+        graph_params_layout.addRow(self.tr("Nodes count"), self.nodes_count)
         graph_group_layout.addWidget(self.bfs_btn)
+        graph_group_layout.addLayout(graph_params_layout)
         graph_group.setLayout(graph_group_layout)
 
         main_layout.addWidget(sort_group)
@@ -80,8 +94,9 @@ class MainWindow(QtWidgets.QWidget):
 
     def bfs_clicked(self):
         self.bfs_widget = graphs.BFS(
-            10,
-            10,
+            self.width_sbox.value(),
+            self.height_sbox.value(),
+            self.nodes_count.value(),
             self
             )
         self.bfs_widget.show()
