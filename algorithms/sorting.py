@@ -24,7 +24,8 @@ BUBBLE_SORT_ALG = r"""
 FOR J=1 TO N-1 STEP 1
     F=0
     FOR I=1 TO N-J STEP 1
-        IF A[I]>A[I+1] THEN SWAP A[I],A[I+1]:F=1
+        IF A[I]>A[I+1] THEN 
+            SWAP A[I],A[I+1]:F=1
     NEXT I
     IF F=0 THEN EXIT FOR
 NEXT J

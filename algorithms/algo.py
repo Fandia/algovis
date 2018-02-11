@@ -34,18 +34,21 @@ class AlgoWidget(QtWidgets.QWidget):
         play_icon = QtGui.QIcon(play_image)
         self.play_button.setIcon(play_icon)
         self.play_button.setIconSize(buttons_size)
+        self.play_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space))
         self.next_button = QtWidgets.QPushButton(self)
         self.next_button.clicked.connect(self.next_state)
         next_image = QtGui.QPixmap("res/next.png")
         next_icon = QtGui.QIcon(next_image)
         self.next_button.setIcon(next_icon)
         self.next_button.setIconSize(buttons_size)
+        self.next_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Right))
         self.prev_button = QtWidgets.QPushButton(self)
         self.prev_button.clicked.connect(self.prev_state)
         prev_image = next_image.transformed(QtGui.QTransform().scale(-1, 1))
         prev_icon = QtGui.QIcon(prev_image)
         self.prev_button.setIcon(prev_icon)
         self.prev_button.setIconSize(buttons_size)
+        self.prev_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Left))
         self.play_layout.addWidget(left_dummy, 1)
         self.play_layout.addWidget(self.prev_button)
         self.play_layout.addWidget(self.play_button)
@@ -131,8 +134,10 @@ class AlgoWidget(QtWidgets.QWidget):
         self.set_by_states()
 
     def slider_released(self):
-        if (self.states_slider.value() >= 0):
+        if self.states_slider.value() >= 0:
             self.current_state = self.states_slider.value()
+        elif self.states_slider.value() > self.max_state:
+            self.current_state = self.max_state
         else:
             self.current_state = 0
         self.set_by_states()

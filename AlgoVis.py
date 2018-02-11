@@ -46,6 +46,8 @@ class MainWindow(QtWidgets.QWidget):
         graph_group_layout = QtWidgets.QVBoxLayout()
         self.bfs_btn = QtWidgets.QPushButton(self.tr("Breadth-first search"), self)
         self.bfs_btn.clicked.connect(self.bfs_clicked)
+        self.dfs_btn = QtWidgets.QPushButton(self.tr("Depth-first search"), self)
+        self.dfs_btn.clicked.connect(self.dfs_clicked)
         graph_params_layout = QtWidgets.QFormLayout()
         self.width_sbox = QtWidgets.QSpinBox(self)
         self.width_sbox.setRange(graphs.MIN_MATRIX_WIDTH, graphs.MAX_MATRIX_WIDTH)
@@ -60,6 +62,7 @@ class MainWindow(QtWidgets.QWidget):
         graph_params_layout.addRow(self.tr("Height"), self.height_sbox)
         graph_params_layout.addRow(self.tr("Nodes count"), self.nodes_count)
         graph_group_layout.addWidget(self.bfs_btn)
+        graph_group_layout.addWidget(self.dfs_btn)
         graph_group_layout.addLayout(graph_params_layout)
         graph_group.setLayout(graph_group_layout)
 
@@ -100,6 +103,15 @@ class MainWindow(QtWidgets.QWidget):
             self
             )
         self.bfs_widget.show()
+
+    def dfs_clicked(self):
+        self.dfs_widget = graphs.DFS(
+            self.width_sbox.value(),
+            self.height_sbox.value(),
+            self.nodes_count.value(),
+            self
+            )
+        self.dfs_widget.show()
 
 
 def main():

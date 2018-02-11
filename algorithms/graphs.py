@@ -12,7 +12,8 @@ EDGE_COLOR = (0, 0, 0)
 SELECT_COLOR = (234, 184, 4)
 SOURCE_COLOR = (1, 178, 137)
 TARGET_COLOR = SOURCE_COLOR
-VISITED_COLOR = (50, 50, 50)
+IN_QUEUE_STACK_COLOR = (100, 100, 100)
+TEXT_COLOR = (0, 0, 0)
 
 MATRIX_WIDTH = 5
 MATRIX_HEIGHT = 5
@@ -28,25 +29,39 @@ NODE_PEN_PIXEL_WIDTH = 1
 EDGE_PEN_PIXEL_WIDTH = 3
 
 BFS_ALG = r"""
-<div style="overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%"><span style="color: #cccccc">BFS(start_node,</span> <span style="color: #cccccc">goal_node)</span> <span style="color: #cccccc">{</span>
- <span style="color: #cdcd00">for</span><span style="color: #cccccc">(</span><span style="color: #cd00cd">all</span> <span style="color: #cccccc">nodes</span> <span style="color: #cccccc">i)</span> <span style="color: #cccccc">visited[i]</span> <span style="color: #3399cc">=</span> <span style="color: #cccccc">false;</span>
- <span style="color: #cccccc">queue</span><span style="color: #3399cc">.</span><span style="color: #cccccc">push(start_node);</span>
- <span style="color: #cccccc">visited[start_node]</span> <span style="color: #3399cc">=</span> <span style="color: #cccccc">true;</span>
- <span style="color: #cdcd00">while</span><span style="color: #cccccc">(</span><span style="color: #cccccc; border: 1px solid #FF0000">!</span> <span style="color: #cccccc">queue</span><span style="color: #3399cc">.</span><span style="color: #cccccc">empty()</span> <span style="color: #cccccc">)</span> <span style="color: #cccccc">{</span>
-  <span style="color: #cccccc">node</span> <span style="color: #3399cc">=</span> <span style="color: #cccccc">queue</span><span style="color: #3399cc">.</span><span style="color: #cccccc">pop();</span>
-  <span style="color: #cdcd00">if</span><span style="color: #cccccc">(node</span> <span style="color: #3399cc">==</span> <span style="color: #cccccc">goal_node)</span> <span style="color: #cccccc">{</span>
-   <span style="color: #cdcd00">return</span> <span style="color: #cccccc">true;</span>
-  <span style="color: #cccccc">}</span>
-  <span style="color: #cccccc">foreach(child</span> <span style="color: #cdcd00">in</span> <span style="color: #cccccc">expand(node))</span> <span style="color: #cccccc">{</span>
-   <span style="color: #cdcd00">if</span><span style="color: #cccccc">(visited[child]</span> <span style="color: #3399cc">==</span> <span style="color: #cccccc">false)</span> <span style="color: #cccccc">{</span>
-    <span style="color: #cccccc">queue</span><span style="color: #3399cc">.</span><span style="color: #cccccc">push(child);</span>
-    <span style="color: #cccccc">visited[child]</span> <span style="color: #3399cc">=</span> <span style="color: #cccccc">true;</span>
-   <span style="color: #cccccc">}</span>
-  <span style="color: #cccccc">}</span>
- <span style="color: #cccccc">}</span>
- <span style="color: #cdcd00">return</span> <span style="color: #cccccc">false;</span>
-<span style="color: #cccccc">}</span>
-</pre></div>
+BFS(start_node, goal_node) {
+ for(all nodes i) visited[i] = false;
+ queue.push(start_node);
+ visited[start_node] = true;
+ while(! queue.empty() ) {
+  node = queue.pop();
+  if(node == goal_node) {
+   return true;
+  }
+  foreach(child in expand(node)) {
+   if(visited[child] == false) {
+    queue.push(child);
+    visited[child] = true;
+   }
+  }
+ }
+ return false;
+}
+"""
+DFS_ALG = r"""
+DFS(G,v)
+    Stack S := {};
+    for each vertex u, set visited[u] := false;
+    push S, v;
+    while (S is not empty) do
+    u := pop S;
+    if (not visited[u]) then
+        visited[u] := true;
+        for each unvisited neighbour w of u
+            push S, w;
+    end if
+    end while
+END DFS()
 """
 
 class GraphNode(QtWidgets.QGraphicsEllipseItem):
@@ -88,13 +103,14 @@ class GraphWidget(AlgoWidget):
         self.target_node = self.nodes_list[-1]
         node_pen = QtGui.QPen()
         node_pen.setWidth(NODE_PEN_PIXEL_WIDTH)
-        node_pen.setColor(QtGui.QColor(*EDGE_COLOR))
+        node_pen.setColor(QtGui.QColor(*NODE_COLOR))
         for id, node in enumerate(self.nodes_list, 0):
             node.id = id
             node.setBrush(QtGui.QColor(*NODE_COLOR))
             node.setPen(node_pen)
             self.graphic_scene.addItem(node)
-            QtWidgets.QGraphicsTextItem(str(id), node)
+            text = QtWidgets.QGraphicsTextItem(str(id), node)
+            text.setDefaultTextColor(QtGui.QColor(*TEXT_COLOR))
         edge_pen = QtGui.QPen()
         edge_pen.setWidth(EDGE_PEN_PIXEL_WIDTH)
         edge_pen.setColor(QtGui.QColor(*EDGE_COLOR))
@@ -166,7 +182,10 @@ class GraphWidget(AlgoWidget):
 
     def set_by_states(self):
         for i, node_state in enumerate(self.nodes_states_list[self.current_state], 0):
+            node_pen = self.nodes_list[i].pen()
+            node_pen.setColor(QtGui.QColor(*node_state["color"]))
             self.nodes_list[i].setBrush(QtGui.QColor(*node_state["color"]))
+            self.nodes_list[i].setPen(node_pen)
         for i, edge_state in enumerate(self.edges_states_list[self.current_state], 0):
             edge_pen = self.edges_list[i].pen()
             edge_pen.setColor(QtGui.QColor(*edge_state["color"]))
@@ -220,7 +239,47 @@ class BFS(GraphWidget):
                     self.nodes_list[nghbr_index].visited = True
                     self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
                     self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
-                    self.nodes_states_list[-1][nghbr_index]["color"] = VISITED_COLOR
+                    self.nodes_states_list[-1][nghbr_index]["color"] = IN_QUEUE_STACK_COLOR
                     self.edges_states_list[-1][node.edges_list_shifts[ \
-                        self._get_edge_idx(node, self.nodes_list[nghbr_index])]]["color"] = VISITED_COLOR
+                        self._get_edge_idx(node, self.nodes_list[nghbr_index])]]["color"] = IN_QUEUE_STACK_COLOR
+        self.max_state = len(self.nodes_states_list) - 1
+
+class DFS(GraphWidget):
+    def __init__(self, width, height, max_nodes, parent=None):
+        super().__init__(width, height, max_nodes, parent)
+        self.setWindowTitle(self.tr("Depth-first search"))
+        self.set_description(self.tr(
+        """
+        <b>Depth-first search</b> (<b>DFS</b>) is an algorithm for traversing or searching tree or graph data structures. \
+        One starts at the root (selecting some arbitrary node as the root in the case of a graph) and explores \
+        as far as possible along each branch before backtracking.
+        A version of depth-first search was investigated in the 19th century by French mathematician \
+        <a href="https://en.wikipedia.org/wiki/Charles_Pierre_Tr%C3%A9maux">Charles Pierre Trémaux</a> as a strategy for solving mazes.
+        """), DFS_ALG)
+
+    def set_states(self):
+        self.nodes_states_list = [[{"color":NODE_COLOR} for _ in self.nodes_list]]
+        self.edges_states_list = [[{"color":EDGE_COLOR} for _ in self.edges_list]]
+        stack = []
+        stack.append((self.source_node, None))
+        self.nodes_states_list[-1][self.source_node.id]["color"] = SOURCE_COLOR
+        self.nodes_states_list[-1][self.target_node.id]["color"] = TARGET_COLOR
+        while len(stack) > 0:
+            node, prev_node = stack.pop()
+            node.visited = True  
+            self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
+            self.nodes_states_list[-1][node.id]["color"] = SELECT_COLOR
+            self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
+            if prev_node != None:
+                self.edges_states_list[-1][node.edges_list_shifts[self._get_edge_idx(node, prev_node)]]["color"] = SELECT_COLOR
+            if node == self.target_node:
+                break                
+            for nghbr_index in node.nghbrs_list_shifts:
+                if not self.nodes_list[nghbr_index].visited:
+                    stack.append((self.nodes_list[nghbr_index], node))
+                    self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
+                    self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
+                    self.nodes_states_list[-1][nghbr_index]["color"] = IN_QUEUE_STACK_COLOR
+                    self.edges_states_list[-1][node.edges_list_shifts[ \
+                        self._get_edge_idx(node, self.nodes_list[nghbr_index])]]["color"] = IN_QUEUE_STACK_COLOR
         self.max_state = len(self.nodes_states_list) - 1
