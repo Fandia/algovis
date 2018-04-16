@@ -116,10 +116,10 @@ class MainWindow(QtWidgets.QWidget):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    # translator = QtCore.QTranslator()
-    # translator.load("algovis_ru")
-    # if not app.installTranslator(translator):
-    #     print("Can not install translation!")
+    translator = QtCore.QTranslator()
+    translator.load("algovis_ru")
+    if not app.installTranslator(translator):
+        print("Can not install translation!")
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
