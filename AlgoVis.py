@@ -116,6 +116,7 @@ class MainWindow(QtWidgets.QWidget):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon('icon.ico'))
     translator = QtCore.QTranslator()
     translator.load("algovis_ru")
     if not app.installTranslator(translator):
