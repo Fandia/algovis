@@ -209,7 +209,7 @@ class BFS(GraphWidget):
         of a graph, sometimes referred to as a 'search key') and explores the neighbor \
         nodes first, before moving to the next level neighbours.
         BFS and its application in finding connected components of graphs were invented in \
-        1945 by Michael Burke and Konrad Zuse, in his (rejected) Ph.D. thesis on the Plankalkül \
+        1945 by Michael Burke and Konrad Zuse, in his (rejected) Ph.D. thesis on the Plankalkul \
         programming language, but this was not published until 1972. It was reinvented in 1959 \
         by E. F. Moore, who used it to find the shortest path out of a maze, and discovered \
         independently by C. Y. Lee as a wire routing algorithm (published 1961).
@@ -254,7 +254,7 @@ class DFS(GraphWidget):
         One starts at the root (selecting some arbitrary node as the root in the case of a graph) and explores \
         as far as possible along each branch before backtracking.
         A version of depth-first search was investigated in the 19th century by French mathematician \
-        <a href="https://en.wikipedia.org/wiki/Charles_Pierre_Tr%C3%A9maux">Charles Pierre Trémaux</a> as a strategy for solving mazes.
+        Charles Pierre Tremaux as a strategy for solving mazes.
         """), DFS_ALG)
 
     def set_states(self):
