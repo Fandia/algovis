@@ -1,12 +1,11 @@
 import random
-import math
 import json
 from queue import Queue
-
-from algorithms.algo import AlgoWidget
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-#	CONSTANTS
+from algorithms.algo import AlgoWidget
+
+# CONSTANTS
 NODE_COLOR = (0, 128, 255)
 EDGE_COLOR = (0, 0, 0)
 SELECT_COLOR = (234, 184, 4)
@@ -64,13 +63,14 @@ DFS(G,v)
 END DFS()
 """
 
+
 class GraphNode(QtWidgets.QGraphicsEllipseItem):
     def __init__(self, i, j, parent=None):
         super().__init__(parent)
         self.index = (i, j)
         self.used = False
-        self.nghbrs_list_shifts = []
-        self.edges_list_shifts = []
+        self.neighbours_offsets = []
+        self.edges_offsets = []
         self.id = 0
         self.visited = False
 
@@ -91,13 +91,16 @@ class GraphWidget(AlgoWidget):
         self.matrix_width = width
         self.matrix_height = height
         self.nodes_matrix = [[GraphNode(i, j) for j in range(width)] for i in range(height)]
-        self.max_nodes_count = max_nodes
-        first_indx = (random.randint(0, height - 1), random.randint(0, width - 1))
-        self.nodes_matrix[first_indx[0]][first_indx[1]].used = True
-        self.nodes_list = [self.nodes_matrix[first_indx[0]][first_indx[1]]]
+        if max_nodes <= width * height:
+            self.max_nodes_count = max_nodes
+        else:
+            self.max_nodes_count = width * height
+        first_idx = (random.randint(0, height - 1), random.randint(0, width - 1))
+        self.nodes_matrix[first_idx[0]][first_idx[1]].used = True
+        self.nodes_list = [self.nodes_matrix[first_idx[0]][first_idx[1]]]
         self.edges_list = []
-        self.crnt_nds_list_shift = 0
-        self.neighbours_indxs = [(-1, 0), (0, 1), (1, 0), (0, -1), (-1, 1), (1, 1), (1, -1), (-1, -1)]  
+        self.current_nodes_list_offset = 0
+        self.neighbours_idxs = [(-1, 0), (0, 1), (1, 0), (0, -1), (-1, 1), (1, 1), (1, -1), (-1, -1)]
         self.init_graph()
         self.source_node = self.nodes_list[0]
         self.target_node = self.nodes_list[-1]
@@ -125,33 +128,36 @@ class GraphWidget(AlgoWidget):
         self.resizeEvent = self.update_graph_scene
 
     def init_graph(self):
-        crnt_node = self.nodes_list[self.crnt_nds_list_shift]
-        crnt_node_indx = crnt_node.index
-        rnd_neighbours_flg = [bool(random.randint(0,1)) for _ in range(len(self.neighbours_indxs))]
-        if not any(rnd_neighbours_flg):            
-            rnd_neighbours_flg[random.randint(0,len(rnd_neighbours_flg) - 1)] = True
-        for indx, neighbour_flg in enumerate(rnd_neighbours_flg, 0):
-            if len(self.nodes_list) < self.max_nodes_count:                        
-                neighbour_index = (crnt_node_indx[0] + self.neighbours_indxs[indx][0], \
-                    crnt_node_indx[1] + self.neighbours_indxs[indx][1])
+        current_node = self.nodes_list[self.current_nodes_list_offset]
+        current_node_idx = current_node.index
+        rnd_neighbours_flg = [bool(random.randint(0, 1)) for _ in range(len(self.neighbours_idxs))]
+        if not any(rnd_neighbours_flg):
+            rnd_neighbours_flg[random.randint(0, len(rnd_neighbours_flg) - 1)] = True
+        for idx, neighbour_flg in enumerate(rnd_neighbours_flg, 0):
+            if len(self.nodes_list) < self.max_nodes_count:
+                neighbour_index = (current_node_idx[0] + self.neighbours_idxs[idx][0],
+                                   current_node_idx[1] + self.neighbours_idxs[idx][1])
                 if neighbour_index[0] < self.matrix_height and neighbour_index[0] >= 0 and \
-                    neighbour_index[1] < self.matrix_width and neighbour_index[1] >= 0:
-                    crnt_neighbour = self.nodes_matrix[neighbour_index[0]][neighbour_index[1]]
-                    if neighbour_flg and not crnt_neighbour.used:
-                        crnt_neighbour.used = True
-                        crnt_neighbour.nghbrs_list_shifts.append(self.crnt_nds_list_shift)
-                        self.nodes_list.append(crnt_neighbour)
-                        crnt_node.nghbrs_list_shifts.append(len(self.nodes_list) - 1)
-                        self.edges_list.append(GraphEdge(self.crnt_nds_list_shift, len(self.nodes_list) - 1))
-                        crnt_neighbour.edges_list_shifts.append(len(self.edges_list) - 1)
-                        crnt_node.edges_list_shifts.append(len(self.edges_list) - 1)
+                        neighbour_index[1] < self.matrix_width and neighbour_index[1] >= 0:
+                    current_neighbour = self.nodes_matrix[neighbour_index[0]][neighbour_index[1]]
+                    if neighbour_flg and not current_neighbour.used:
+                        current_neighbour.used = True
+                        current_neighbour.neighbours_offsets.append(self.current_nodes_list_offset)
+                        self.nodes_list.append(current_neighbour)
+                        current_node.neighbours_offsets.append(len(self.nodes_list) - 1)
+                        self.edges_list.append(GraphEdge(self.current_nodes_list_offset, len(self.nodes_list) - 1))
+                        current_neighbour.edges_offsets.append(len(self.edges_list) - 1)
+                        current_node.edges_offsets.append(len(self.edges_list) - 1)
 
-        if len(self.nodes_list) < self.max_nodes_count and len(self.nodes_list) - 1 > self.crnt_nds_list_shift:
-            self.crnt_nds_list_shift += 1
+        if len(self.nodes_list) < self.max_nodes_count:
+            if len(self.nodes_list) - 1 > self.current_nodes_list_offset:
+                self.current_nodes_list_offset += 1
+            else:
+                self.current_nodes_list_offset = 0
             self.init_graph()
 
     def update_graph_scene(self, event):
-        #node_width = min(self.graphic_view.width(), self.graphic_view.height()) / self.matrix_width
+        # node_width = min(self.graphic_view.width(), self.graphic_view.height()) / self.matrix_width
         node_width = NODE_PIXEL_WIDTH
         distance = node_width
         for node in self.nodes_list:
@@ -176,7 +182,7 @@ class GraphWidget(AlgoWidget):
         new_rect = self.graphic_scene.itemsBoundingRect()
         border = 0.1 * min(new_rect.width(), new_rect.height())
         new_rect.setRect(new_rect.x() - border, new_rect.y() - border,
-            new_rect.width() + border * 2, new_rect.height() + border * 2)
+                         new_rect.width() + border * 2, new_rect.height() + border * 2)
         self.graphic_scene.setSceneRect(new_rect)
         self.graphic_view.fitInView(new_rect, QtCore.Qt.KeepAspectRatio)
 
@@ -191,10 +197,11 @@ class GraphWidget(AlgoWidget):
             edge_pen.setColor(QtGui.QColor(*edge_state["color"]))
             self.edges_list[i].setPen(edge_pen)
         self.update_graph_scene(None)
-    
-    def _get_edge_idx(self, src, dst):
-        for i, nghbr in enumerate(src.nghbrs_list_shifts, 0):
-            if nghbr == dst.id:
+
+    @staticmethod
+    def _get_edge_idx(src, dst):
+        for i, neighbour in enumerate(src.neighbours_offsets, 0):
+            if neighbour == dst.id:
                 return i
 
 
@@ -203,7 +210,7 @@ class BFS(GraphWidget):
         super().__init__(width, height, max_nodes, parent)
         self.setWindowTitle(self.tr("Breadth-first search"))
         self.set_description(self.tr(
-        """
+            """
         <b>Breadth-first search</b> (<b>BFS</b>) is an algorithm for traversing or searching tree \
         or graph data structures. It starts at the tree root (or some arbitrary node \
         of a graph, sometimes referred to as a 'search key') and explores the neighbor \
@@ -216,8 +223,8 @@ class BFS(GraphWidget):
         """), BFS_ALG)
 
     def set_states(self):
-        self.nodes_states_list = [[{"color":NODE_COLOR} for _ in self.nodes_list]]
-        self.edges_states_list = [[{"color":EDGE_COLOR} for _ in self.edges_list]]
+        self.nodes_states_list = [[{"color": NODE_COLOR} for _ in self.nodes_list]]
+        self.edges_states_list = [[{"color": EDGE_COLOR} for _ in self.edges_list]]
         queue = Queue()
         self.source_node.visited = True
         queue.put_nowait((self.source_node, None))
@@ -228,28 +235,30 @@ class BFS(GraphWidget):
             self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
             self.nodes_states_list[-1][node.id]["color"] = SELECT_COLOR
             self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
-            if prev_node != None:
-                self.edges_states_list[-1][node.edges_list_shifts[self._get_edge_idx(node, prev_node)]]["color"] = SELECT_COLOR
+            if prev_node is not None:
+                self.edges_states_list[-1][node.edges_offsets[self._get_edge_idx(node, prev_node)]][
+                    "color"] = SELECT_COLOR
 
             if node == self.target_node:
                 break
-            for nghbr_index in node.nghbrs_list_shifts:
-                if not self.nodes_list[nghbr_index].visited:
-                    queue.put_nowait((self.nodes_list[nghbr_index], node))
-                    self.nodes_list[nghbr_index].visited = True
+            for neighbour_idx in node.neighbours_offsets:
+                if not self.nodes_list[neighbour_idx].visited:
+                    queue.put_nowait((self.nodes_list[neighbour_idx], node))
+                    self.nodes_list[neighbour_idx].visited = True
                     self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
                     self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
-                    self.nodes_states_list[-1][nghbr_index]["color"] = IN_QUEUE_STACK_COLOR
-                    self.edges_states_list[-1][node.edges_list_shifts[ \
-                        self._get_edge_idx(node, self.nodes_list[nghbr_index])]]["color"] = IN_QUEUE_STACK_COLOR
+                    self.nodes_states_list[-1][neighbour_idx]["color"] = IN_QUEUE_STACK_COLOR
+                    self.edges_states_list[-1][node.edges_offsets[ \
+                        self._get_edge_idx(node, self.nodes_list[neighbour_idx])]]["color"] = IN_QUEUE_STACK_COLOR
         self.max_state = len(self.nodes_states_list) - 1
+
 
 class DFS(GraphWidget):
     def __init__(self, width, height, max_nodes, parent=None):
         super().__init__(width, height, max_nodes, parent)
         self.setWindowTitle(self.tr("Depth-first search"))
         self.set_description(self.tr(
-        """
+            """
         <b>Depth-first search</b> (<b>DFS</b>) is an algorithm for traversing or searching tree or graph data structures. \
         One starts at the root (selecting some arbitrary node as the root in the case of a graph) and explores \
         as far as possible along each branch before backtracking.
@@ -258,28 +267,29 @@ class DFS(GraphWidget):
         """), DFS_ALG)
 
     def set_states(self):
-        self.nodes_states_list = [[{"color":NODE_COLOR} for _ in self.nodes_list]]
-        self.edges_states_list = [[{"color":EDGE_COLOR} for _ in self.edges_list]]
+        self.nodes_states_list = [[{"color": NODE_COLOR} for _ in self.nodes_list]]
+        self.edges_states_list = [[{"color": EDGE_COLOR} for _ in self.edges_list]]
         stack = []
         stack.append((self.source_node, None))
         self.nodes_states_list[-1][self.source_node.id]["color"] = SOURCE_COLOR
         self.nodes_states_list[-1][self.target_node.id]["color"] = TARGET_COLOR
         while len(stack) > 0:
             node, prev_node = stack.pop()
-            node.visited = True  
+            node.visited = True
             self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
             self.nodes_states_list[-1][node.id]["color"] = SELECT_COLOR
             self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
-            if prev_node != None:
-                self.edges_states_list[-1][node.edges_list_shifts[self._get_edge_idx(node, prev_node)]]["color"] = SELECT_COLOR
+            if prev_node is not None:
+                self.edges_states_list[-1][node.edges_offsets[self._get_edge_idx(node, prev_node)]][
+                    "color"] = SELECT_COLOR
             if node == self.target_node:
-                break                
-            for nghbr_index in node.nghbrs_list_shifts:
-                if not self.nodes_list[nghbr_index].visited:
-                    stack.append((self.nodes_list[nghbr_index], node))
+                break
+            for neighbour_idx in node.neighbours_offsets:
+                if not self.nodes_list[neighbour_idx].visited:
+                    stack.append((self.nodes_list[neighbour_idx], node))
                     self.nodes_states_list.append(json.loads(json.dumps(self.nodes_states_list[-1])))
                     self.edges_states_list.append(json.loads(json.dumps(self.edges_states_list[-1])))
-                    self.nodes_states_list[-1][nghbr_index]["color"] = IN_QUEUE_STACK_COLOR
-                    self.edges_states_list[-1][node.edges_list_shifts[ \
-                        self._get_edge_idx(node, self.nodes_list[nghbr_index])]]["color"] = IN_QUEUE_STACK_COLOR
+                    self.nodes_states_list[-1][neighbour_idx]["color"] = IN_QUEUE_STACK_COLOR
+                    self.edges_states_list[-1][node.edges_offsets[ \
+                        self._get_edge_idx(node, self.nodes_list[neighbour_idx])]]["color"] = IN_QUEUE_STACK_COLOR
         self.max_state = len(self.nodes_states_list) - 1

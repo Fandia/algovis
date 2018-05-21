@@ -109,6 +109,12 @@ venv.bak/
 *.sln
 .vs
 
+# ide
+.ide
+.idea
+ide/
+idea
+
 .gitignore.save
 algovis_env
 

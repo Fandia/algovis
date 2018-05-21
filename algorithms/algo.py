@@ -1,6 +1,6 @@
 import threading
-import copy
-
+import sys
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 #   CONSTANTS
@@ -8,6 +8,18 @@ PAUSE_TIME = 500
 WIN_DISPL_PART = 0.6
 FONT_DISPL_PART = 0.02
 BTN_DISPL_PART = 0.02
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 class AlgoWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -30,14 +42,14 @@ class AlgoWidget(QtWidgets.QWidget):
         buttons_size = QtCore.QSize(self.screen_base * BTN_DISPL_PART, self.screen_base * BTN_DISPL_PART)
         self.play_button = QtWidgets.QPushButton(self)
         self.play_button.clicked.connect(self.change_play_states_wait_event)
-        play_image = QtGui.QPixmap("res/play.png")
+        play_image = QtGui.QPixmap(resource_path("res/play.png"))
         play_icon = QtGui.QIcon(play_image)
         self.play_button.setIcon(play_icon)
         self.play_button.setIconSize(buttons_size)
         self.play_button.setShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space))
         self.next_button = QtWidgets.QPushButton(self)
         self.next_button.clicked.connect(self.next_state)
-        next_image = QtGui.QPixmap("res/next.png")
+        next_image = QtGui.QPixmap(resource_path("res/next.png"))
         next_icon = QtGui.QIcon(next_image)
         self.next_button.setIcon(next_icon)
         self.next_button.setIconSize(buttons_size)
@@ -111,8 +123,8 @@ class AlgoWidget(QtWidgets.QWidget):
 
     def timerEvent(self, event=None):
         self.set_by_states()
-        if (self.current_state == self.max_state):
-            #self.current_state = 0
+        if self.current_state == self.max_state:
+            # self.current_state = 0
             self.play_states_event.clear()
             self.killTimer(self.current_change_state_timer)
         else:
@@ -120,7 +132,7 @@ class AlgoWidget(QtWidgets.QWidget):
         self.states_slider.setValue(self.current_state)
 
     def change_play_states_wait_event(self):
-        if (self.play_states_event.isSet()):
+        if self.play_states_event.isSet():
             self.play_states_event.clear()
             self.killTimer(self.current_change_state_timer)
         else:
@@ -128,7 +140,7 @@ class AlgoWidget(QtWidgets.QWidget):
             self.current_change_state_timer = self.startTimer(PAUSE_TIME)
 
     def slider_pressed(self):
-        if (self.play_states_event.isSet()):
+        if self.play_states_event.isSet():
             self.killTimer(self.current_change_state_timer)
         self.current_state = self.states_slider.value()
         self.set_by_states()
@@ -141,7 +153,7 @@ class AlgoWidget(QtWidgets.QWidget):
         else:
             self.current_state = 0
         self.set_by_states()
-        if(self.play_states_event.isSet()):
+        if self.play_states_event.isSet():
             self.current_change_state_timer = self.startTimer(PAUSE_TIME)
 
     def slider_changed(self):
@@ -149,13 +161,13 @@ class AlgoWidget(QtWidgets.QWidget):
         self.set_by_states()
 
     def next_state(self):
-        if (self.current_state != self.max_state):
+        if self.current_state != self.max_state:
             self.current_state += 1
         self.states_slider.setValue(self.current_state)
         self.set_by_states()
 
     def prev_state(self):
-        if (self.current_state != 0):
+        if self.current_state != 0:
             self.current_state -= 1
         self.states_slider.setValue(self.current_state)
         self.set_by_states()

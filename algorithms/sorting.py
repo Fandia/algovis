@@ -1,13 +1,12 @@
 # -*- coding: UTF-8 -*-
 import random
-import time
 import math
 import json
+from PyQt5 import QtGui, QtWidgets
 
-from algorithms.algo import *
-from PyQt5 import QtCore, QtGui, QtWidgets
+from algorithms.algo import AlgoWidget
 
-#    CONSTANTS
+# CONSTANTS
 MIN_RAND = 1
 MAX_RAND = 20
 ELEMENTS_COUNT = 20
@@ -53,10 +52,12 @@ algorithm partition(A, lo, hi) is
     return i
 """
 
+
 class SortElement(QtWidgets.QGraphicsRectItem):
     def __init__(self, value, parent=None):
         super().__init__(parent)
         self.value = value
+
 
 class SortWidget(AlgoWidget):
     def __init__(self, min_rand, max_rand, elements_count, parent=None):
@@ -76,9 +77,9 @@ class SortWidget(AlgoWidget):
             self.sort_list.append(element)
             self.graphic_scene.addItem(self.sort_list[-1])
 
-        if(min_rand >= 0 and max_rand >= 0):
+        if min_rand >= 0 and max_rand >= 0:
             self.ground_level = self.graphic_view.height()
-        elif(min_rand < 0 and max_rand > 0):
+        elif min_rand < 0 and max_rand > 0:
             self.ground_level = math.floor((1 - abs(min_rand) / self.values_range) * self.graphic_view.height())
         else:
             self.ground_level = 0
@@ -95,7 +96,7 @@ class SortWidget(AlgoWidget):
         width = self.graphic_view.width() / len(self.sort_list)
         for i, element in enumerate(self.sort_list, 0):
             height = math.floor(abs(element.value) / self.values_range * self.graphic_view.height())
-            if(element.value > 0):
+            if element.value > 0:
                 y = self.ground_level - height
             else:
                 y = self.ground_level
@@ -110,7 +111,7 @@ class SortWidget(AlgoWidget):
         new_rect = self.graphic_scene.itemsBoundingRect()
         border = 0.1 * min(new_rect.width(), new_rect.height())
         new_rect.setRect(new_rect.x() - border, new_rect.y() - border,
-            new_rect.width() + border * 2, new_rect.height() + border * 2)
+                         new_rect.width() + border * 2, new_rect.height() + border * 2)
         self.graphic_scene.setSceneRect(new_rect)
         self.graphic_view.fitInView(new_rect)
 
@@ -126,35 +127,35 @@ class BubbleSort(SortWidget):
         super().__init__(min_rand, max_rand, elements_count, parent)
         self.setWindowTitle(self.tr("Bubble sort"))
         self.set_description(self.tr(
-        """
-        <b>Bubble sort</b>, sometimes referred to as <b>sinking sort</b>, is a simple sorting algorithm that repeatedly \
-        steps through the list to be sorted, compares each pair of adjacent items and swaps them if they are \
-        in the wrong order. The pass through the list is repeated until no swaps are needed, which indicates \
-        that the list is sorted. The algorithm, which is a comparison sort, is named for the way smaller or \
-        larger elements "bubble" to the top of the list. Although the algorithm is simple, it is too slow and \
-        impractical for most problems even when compared to insertion sort. It can be practical if the input \
-        is usually in sorted order but may occasionally have some out-of-order elements nearly in position.\
-        """), BUBBLE_SORT_ALG)
+            """
+            <b>Bubble sort</b>, sometimes referred to as <b>sinking sort</b>, is a simple sorting algorithm that repeatedly \
+            steps through the list to be sorted, compares each pair of adjacent items and swaps them if they are \
+            in the wrong order. The pass through the list is repeated until no swaps are needed, which indicates \
+            that the list is sorted. The algorithm, which is a comparison sort, is named for the way smaller or \
+            larger elements "bubble" to the top of the list. Although the algorithm is simple, it is too slow and \
+            impractical for most problems even when compared to insertion sort. It can be practical if the input \
+            is usually in sorted order but may occasionally have some out-of-order elements nearly in position.\
+            """), BUBBLE_SORT_ALG)
 
     def set_states(self):
-        self.states_list = [[{"value":e.value, "color":ELEMENT_COLOR} for e in self.sort_list]]
+        self.states_list = [[{"value": e.value, "color": ELEMENT_COLOR} for e in self.sort_list]]
         for j in range(1, len(self.sort_list)):
             done = True
             for i in range(len(self.sort_list) - j):
                 #   change color in selected elements
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                 self.states_list[-1][i]["color"] = SELECT_COLOR
-                self.states_list[-1][i+1]["color"] = SELECT_COLOR
-                #   swap selected elements
+                self.states_list[-1][i + 1]["color"] = SELECT_COLOR
+                # swap selected elements
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
-                if(self.states_list[-1][i]["value"] > self.states_list[-1][i+1]["value"]):
-                    self.states_list[-1][i], self.states_list[-1][i+1] = \
-                        self.states_list[-1][i+1], self.states_list[-1][i]
+                if self.states_list[-1][i]["value"] > self.states_list[-1][i + 1]["value"]:
+                    self.states_list[-1][i], self.states_list[-1][i + 1] = \
+                        self.states_list[-1][i + 1], self.states_list[-1][i]
                     done = False
-                #   replace color by default brush
+                # replace color by default brush
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                 self.states_list[-1][i]["color"] = ELEMENT_COLOR
-                self.states_list[-1][i+1]["color"] = ELEMENT_COLOR
+                self.states_list[-1][i + 1]["color"] = ELEMENT_COLOR
             if (done):
                 break
         self.max_state = len(self.states_list) - 1
@@ -165,21 +166,22 @@ class QuickSort(SortWidget):
         super().__init__(min_rand, max_rand, elements_count, parent)
         self.setWindowTitle(self.tr("Quick sort"))
         self.set_description(self.tr(
-        """
-        <b>Quicksort</b> (sometimes called <b>partition-exchange sort</b>) is an efficient sorting algorithm, \
-        serving as a systematic method for placing the elements of an array in order. \
-        Developed by <a href="https://en.wikipedia.org/wiki/Tony_Hoare">Tony Hoare</a> in 1959 and published in 1961, \
-        it is still a commonly used algorithm for sorting. When implemented well, it can be about two or three \
-        times faster than its main competitors, merge sort and heapsort.
-        Quicksort is a comparison sort, meaning that it can sort items of any type for which a "less-than" relation \
-        (formally, a total order) is defined. In efficient implementations it is not a stable sort, meaning that the \
-        relative order of equal sort items is not preserved. Quicksort can operate in-place on an array, requiring \
-        small additional amounts of memory to perform the sorting. It is very similar to selection sort, except that \
-        it does not always choose worst-case partition.
-        """), QUICK_SORT_ALG)
+            """
+            <b>Quicksort</b> (sometimes called <b>partition-exchange sort</b>) is an efficient sorting algorithm, \
+            serving as a systematic method for placing the elements of an array in order. \
+            Developed by <a href="https://en.wikipedia.org/wiki/Tony_Hoare">Tony Hoare</a> in 1959 and published in 1961, \
+            it is still a commonly used algorithm for sorting. When implemented well, it can be about two or three \
+            times faster than its main competitors, merge sort and heapsort.
+            Quicksort is a comparison sort, meaning that it can sort items of any type for which a "less-than" relation \
+            (formally, a total order) is defined. In efficient implementations it is not a stable sort, meaning that the \
+            relative order of equal sort items is not preserved. Quicksort can operate in-place on an array, requiring \
+            small additional amounts of memory to perform the sorting. It is very similar to selection sort, except that \
+            it does not always choose worst-case partition.
+            """), QUICK_SORT_ALG)
 
     def set_states(self):
-        self.states_list = [[{"value":e.value, "color":ELEMENT_COLOR} for e in self.sort_list]]
+        self.states_list = [[{"value": e.value, "color": ELEMENT_COLOR} for e in self.sort_list]]
+
         def get_pivot(lo, hi):
             # for element in self.states_list[-1]:
             #     if element["color"] == PIVOT_COLOR:
@@ -209,7 +211,7 @@ class QuickSort(SortWidget):
                 if i < j:
                     self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                     self.states_list[-1][i], self.states_list[-1][j] = \
-                    self.states_list[-1][j], self.states_list[-1][i]
+                        self.states_list[-1][j], self.states_list[-1][i]
                     self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                     self.states_list[-1][i]["color"] = ELEMENT_COLOR
                     self.states_list[-1][j]["color"] = ELEMENT_COLOR
@@ -228,6 +230,7 @@ class QuickSort(SortWidget):
                 p = partition(lo, hi)
                 quicksort(lo, p - 1)
                 quicksort(p, hi)
+
         quicksort(0, len(self.states_list[-1]) - 1)
 
         for j in range(1, len(self.sort_list)):
@@ -236,17 +239,17 @@ class QuickSort(SortWidget):
                 #   change color in selected elements
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                 self.states_list[-1][i]["color"] = SELECT_COLOR
-                self.states_list[-1][i+1]["color"] = SELECT_COLOR
+                self.states_list[-1][i + 1]["color"] = SELECT_COLOR
                 #   swap selected elements
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
-                if(self.states_list[-1][i]["value"] > self.states_list[-1][i+1]["value"]):
-                    self.states_list[-1][i], self.states_list[-1][i+1] = \
-                        self.states_list[-1][i+1], self.states_list[-1][i]
+                if (self.states_list[-1][i]["value"] > self.states_list[-1][i + 1]["value"]):
+                    self.states_list[-1][i], self.states_list[-1][i + 1] = \
+                        self.states_list[-1][i + 1], self.states_list[-1][i]
                     done = False
                 #   replace color by default brush
                 self.states_list.append(json.loads(json.dumps(self.states_list[-1])))
                 self.states_list[-1][i]["color"] = ELEMENT_COLOR
-                self.states_list[-1][i+1]["color"] = ELEMENT_COLOR
-            if (done):
+                self.states_list[-1][i + 1]["color"] = ELEMENT_COLOR
+            if done:
                 break
         self.max_state = len(self.states_list) - 1
